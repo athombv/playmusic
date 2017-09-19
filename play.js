@@ -92,6 +92,11 @@ PlayMusic.prototype.request = function(options, callback) {
             if(typeof callback === "function") callback(err, body, res);
         });
     });
+    req.on('error', function (error) {
+        var err = new Error("Error making https request");
+        err.error = err;
+        if (typeof callback === "function") callback(err, null, null);
+    });
     if(typeof options.data !== "undefined") req.write(options.data);
     req.end();
 };
@@ -306,7 +311,7 @@ PlayMusic.prototype.getStreamUrl = function (id, callback) {
         url: this._mobileURL + 'mplay?' + qstring,
         options: { headers: { "X-Device-ID": that._deviceId } }
     }, function(err, data, res) {
-        if(res.statusCode === 302 && typeof res.headers.location === "string") {
+        if(!err && res.statusCode === 302 && typeof res.headers.location === "string") {
             callback(null, res.headers.location);
         } else {
             callback(new Error("Unable to get stream url" + err), res.headers.location);
